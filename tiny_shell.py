@@ -39,14 +39,18 @@ class TinyShell:
 
 
     def tsh_help(self, args):
-        if len(args) > 0:
-            print("TSh: help() takes no argument (%d given)" % len(args))
+        if len(args) > 1:
+            print("TSh: help() takes at most 1 argument (%d given)" % len(args))
             return
 
-        print("Support common bash command")
-        print("These commands are builtin:")
-        for command in self.builtin_helps:
-            print("%-10s: %s\n" % (command, self.builtin_helps[command]))
+
+        if args[0] in builtin_helps:
+            print("%-10s: %s\n" % (args[0], self.builtin_helps[args[0]]))
+        else:
+            print("Support common bash command")
+            print("These commands are builtin:")
+            for command in self.builtin_helps:
+                print("%-10s: %s\n" % (command, self.builtin_helps[command]))
     
 
     def tsh_cd(self, args):
