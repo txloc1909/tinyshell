@@ -44,7 +44,7 @@ class TinyShell:
             return
 
 
-        if len(args) > 0 and args[0] in builtin_helps:
+        if len(args) > 0 and args[0] in self.builtin_helps:
             print("%-10s: %s\n" % (args[0], self.builtin_helps[args[0]]))
         else:
             print("Support common bash command")
