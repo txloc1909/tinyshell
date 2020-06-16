@@ -21,8 +21,8 @@ class TinyShell:
             "cd": "change current working directory",
             "help": "print help",
             "exit": "exit the shell",
-            "runbg": "run a binary executional file background",
-            "runfg": "run a binary executional file foreground",
+            "runbg": "run a binary execution file background",
+            "runfg": "run a binary execution file foreground",
             "killbg": "kill current background process",
             "runsh": "run a shell script"
         }
@@ -44,10 +44,13 @@ class TinyShell:
             return
 
 
-        if len(args) > 0 and args[0] in self.builtin_helps:
-            print("%-10s: %s\n" % (args[0], self.builtin_helps[args[0]]))
+        if len(args) > 0:
+            if args[0] in self.builtin_helps:
+                print("%-10s: %s\n" % (args[0], self.builtin_helps[args[0]]))
+            else:
+                print("TSh: no builtin command named %s!\n" % args[0])
         else:
-            print("Support common bash command")
+            print("Support internal bash command")
             print("These commands are builtin:")
             for command in self.builtin_helps:
                 print("%-10s: %s\n" % (command, self.builtin_helps[command]))
@@ -78,10 +81,11 @@ class TinyShell:
 
     def tsh_kill(self, args):
         if len(args) > 0:
-            print("TSh: kill() takes no argument (%d given)" % len(args))
+            print("TSh: killbg() takes no argument (%d given)" % len(args))
             return
         
-        os.kill(self.current_bg_pid, signal.SIGINT)
+        if self.current_bg_pid > 0:
+            os.kill(self.current_bg_pid, signal.SIGINT)
         
 
     def tsh_runfg(self, args):
@@ -90,8 +94,6 @@ class TinyShell:
 
         if pid == 0: 
             # inside child process
-            signal.signal(signal.SIGINT, signal.SIG_DFL)
-
             try:
                 os.execv(args[0], args)
             except FileNotFoundError:
@@ -180,8 +182,12 @@ class TinyShell:
     def loop(self):
         self.welcome();
 
+        def handler(signal, handler):
+            self.current_bg_pid = -1
+
         # os.chdir(self.home_dir)
         while (True):
+            signal.signal(signal.SIGCHLD, handler)
             cwd = os.getcwd().replace(self.home_dir, "~")
             sys.stdin.flush()
             try:
